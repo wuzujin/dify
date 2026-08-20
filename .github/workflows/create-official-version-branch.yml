@@ -25,33 +25,34 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
+          token: ${{ secrets.BRANCH_SYNC_PAT }}
           persist-credentials: true
 
       - name: Configure Git
         run: |
-          set -eux
+          set -euo pipefail
+
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
           git remote -v
 
       - name: Fetch official Dify tag
         env:
           UPSTREAM_REF: ${{ inputs.upstream_ref }}
         run: |
-          set -euxo pipefail
+          set -euo pipefail
 
           git remote remove upstream 2>/dev/null || true
           git remote add upstream https://github.com/langgenius/dify.git
 
           echo "Checking official tag: ${UPSTREAM_REF}"
 
-          if ! git ls-remote --exit-code \
+          git ls-remote --exit-code \
             --tags upstream \
             "refs/tags/${UPSTREAM_REF}" \
-            "refs/tags/${UPSTREAM_REF}^{}"; then
-            echo "::error::Official tag '${UPSTREAM_REF}' does not exist."
-            exit 1
-          fi
+            "refs/tags/${UPSTREAM_REF}^{}"
 
           git fetch --force upstream \
             "refs/tags/${UPSTREAM_REF}:refs/tags/${UPSTREAM_REF}"
@@ -67,10 +68,10 @@ jobs:
         env:
           TARGET_BRANCH: ${{ inputs.target_branch }}
         run: |
-          set -euxo pipefail
+          set -euo pipefail
 
           if [[ ! "${TARGET_BRANCH}" =~ ^[A-Za-z0-9._/-]+$ ]]; then
-            echo "::error::Invalid target branch name: ${TARGET_BRANCH}"
+            echo "::error::Invalid target branch: ${TARGET_BRANCH}"
             exit 1
           fi
 
@@ -81,7 +82,7 @@ jobs:
         env:
           TARGET_BRANCH: ${{ inputs.target_branch }}
         run: |
-          set -euxo pipefail
+          set -euo pipefail
 
           git push origin \
             "refs/heads/${TARGET_BRANCH}:refs/heads/${TARGET_BRANCH}" \
