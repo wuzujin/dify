@@ -1,0 +1,88 @@
+name: Create branch from official Dify tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_ref:
+        description: "Official Dify tag, for example 1.16.0"
+        required: true
+        default: "1.16.0"
+      target_branch:
+        description: "Target branch in this fork"
+        required: true
+        default: "custom-web-1.16.0"
+
+permissions:
+  contents: write
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout fork repository
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure Git
+        run: |
+          set -eux
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote -v
+
+      - name: Fetch official Dify tag
+        env:
+          UPSTREAM_REF: ${{ inputs.upstream_ref }}
+        run: |
+          set -euxo pipefail
+
+          git remote remove upstream 2>/dev/null || true
+          git remote add upstream https://github.com/langgenius/dify.git
+
+          echo "Checking official tag: ${UPSTREAM_REF}"
+
+          if ! git ls-remote --exit-code \
+            --tags upstream \
+            "refs/tags/${UPSTREAM_REF}" \
+            "refs/tags/${UPSTREAM_REF}^{}"; then
+            echo "::error::Official tag '${UPSTREAM_REF}' does not exist."
+            exit 1
+          fi
+
+          git fetch --force upstream \
+            "refs/tags/${UPSTREAM_REF}:refs/tags/${UPSTREAM_REF}"
+
+          OFFICIAL_COMMIT="$(git rev-parse "refs/tags/${UPSTREAM_REF}^{commit}")"
+
+          echo "Official commit: ${OFFICIAL_COMMIT}"
+          git show --no-patch --oneline "${OFFICIAL_COMMIT}"
+
+          echo "OFFICIAL_COMMIT=${OFFICIAL_COMMIT}" >> "$GITHUB_ENV"
+
+      - name: Reset local target branch
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+        run: |
+          set -euxo pipefail
+
+          if [[ ! "${TARGET_BRANCH}" =~ ^[A-Za-z0-9._/-]+$ ]]; then
+            echo "::error::Invalid target branch name: ${TARGET_BRANCH}"
+            exit 1
+          fi
+
+          git branch --force "${TARGET_BRANCH}" "${OFFICIAL_COMMIT}"
+          git show --no-patch --oneline "${TARGET_BRANCH}"
+
+      - name: Push target branch to fork
+        env:
+          TARGET_BRANCH: ${{ inputs.target_branch }}
+        run: |
+          set -euxo pipefail
+
+          git push origin \
+            "refs/heads/${TARGET_BRANCH}:refs/heads/${TARGET_BRANCH}" \
+            --force
