@@ -1,12 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import DifyLogo from '@/app/components/base/logo/dify-logo'
 
 type BrandingFooterProps = {
   removeWebappBrand?: boolean
   replaceWebappLogo?: string | null
 }
 
-const BrandingFooter = ({ removeWebappBrand, replaceWebappLogo }: BrandingFooterProps) => {
+const BrandingFooter = ({ removeWebappBrand }: BrandingFooterProps) => {
   const { t } = useTranslation()
 
   if (removeWebappBrand) return null
@@ -17,11 +16,7 @@ const BrandingFooter = ({ removeWebappBrand, replaceWebappLogo }: BrandingFooter
         <div className="system-2xs-medium-uppercase text-text-tertiary">
           {t(($) => $['chat.poweredBy'], { ns: 'share' })}
         </div>
-        {replaceWebappLogo ? (
-          <img src={replaceWebappLogo} alt="logo" className="block h-5 w-auto" />
-        ) : (
-          <DifyLogo size="small" />
-        )}
+        <span className="text-sm font-semibold text-text-secondary">Swire</span>
       </div>
     </div>
   )
