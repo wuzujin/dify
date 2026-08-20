@@ -1,5 +1,3 @@
-import DifyLogo from '@/app/components/base/logo/dify-logo'
-
 type PoweredByBrandProps = {
   webappBrandRemoved?: boolean
   workspaceLogo?: string
@@ -23,7 +21,7 @@ const PoweredByBrand = ({
       {previewLogo ? (
         <img src={previewLogo} alt="logo" className="block h-5 w-auto" />
       ) : (
-        <DifyLogo size="small" />
+        <span className="text-sm font-semibold text-text-secondary">Swire</span>
       )}
     </>
   )
