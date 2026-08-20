@@ -8,16 +8,13 @@ on:
         required: true
         default: "1.16.0-custom-1"
 
-  push:
-    branches:
-      - "custom-web-1.16.0"
-    paths:
-      - "web/**"
-      - ".github/workflows/build-dify-web.yml"
-
 permissions:
   contents: read
   packages: write
+
+concurrency:
+  group: build-dify-web-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -26,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout current branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare lowercase image name
         id: image
@@ -53,6 +50,6 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ steps.image.outputs.name }}:${{ inputs.image_tag || '1.16.0-custom-1' }}
+            ${{ steps.image.outputs.name }}:${{ inputs.image_tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
