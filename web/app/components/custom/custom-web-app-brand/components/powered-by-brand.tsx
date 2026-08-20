@@ -1,28 +1,18 @@
 type PoweredByBrandProps = {
   webappBrandRemoved?: boolean
+  // 以下参数保留但不使用，避免编译报错
   workspaceLogo?: string
   webappLogo?: string
-  imgKey: number
+  imgKey?: number
 }
 
-const PoweredByBrand = ({
-  webappBrandRemoved,
-  workspaceLogo,
-  webappLogo,
-  imgKey,
-}: PoweredByBrandProps) => {
+const PoweredByBrand = ({ webappBrandRemoved }: PoweredByBrandProps) => {
   if (webappBrandRemoved) return null
-
-  const previewLogo = workspaceLogo || (webappLogo ? `${webappLogo}?hash=${imgKey}` : '')
 
   return (
     <>
       <div className="system-2xs-medium-uppercase text-text-tertiary">POWERED BY</div>
-      {previewLogo ? (
-        <img src={previewLogo} alt="logo" className="block h-5 w-auto" />
-      ) : (
-        <span className="text-sm font-semibold text-text-secondary">Swire</span>
-      )}
+      <span className="text-sm font-semibold text-text-secondary">Swire</span>
     </>
   )
 }
